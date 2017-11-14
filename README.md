@@ -29,3 +29,9 @@ Usage
 [Discord] <pixis> : Can you hear me IRC Tom? 😃
 [IRC] <pixis> : Yes, I can
 ```
+
+
+TODO
+----
+
+- [ ] Format message from-to IRC-Discord (Bold, Underline, Strikethrough)
