@@ -1,4 +1,4 @@
-# Discord-Irc Synchronization
+# Discord-IRC Synchronization
 
 Description
 -----------
