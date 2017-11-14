@@ -11,7 +11,7 @@ Initialization
 ```sh
 git clone git@github.com:Hackndo/discord-irc-sync.git
 cd discord-irc-sync
-mkvirtualenv dis -p $(which python3)
+mkvirtualenv discordirc -p $(which python3)
 pip install -r requirements.txt
 cp config/config.json.dist config/config.json
 # Edit config.json
@@ -20,8 +20,8 @@ cp config/config.json.dist config/config.json
 Usage
 -----
 
-```sh
-pixis@kali:~/Tools/discord-irc-sync $ python app.py 
+```
+(discordirc) pixis@kali:~/Tools/discord-irc-sync $ python app.py 
 [IRC] Logged in as:
 [IRC] hacknbot
 [Discord] Logged in as:
