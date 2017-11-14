@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
 import json
+import os
 
 from client.ircclient import IRCClient
 from client.discordclient import DiscordClient
 
-with open("config.json", encoding="utf-8") as f:
+with open(os.path.join("config", "config.json"), encoding="utf-8") as f:
     settings = json.loads(f.read())
 
 discord_client = DiscordClient(settings['discord'])
