@@ -1,0 +1,17 @@
+{
+    "irc": {
+        "server": "irc.server.com",
+        "port": "6667",
+        "channel": "#channel",
+        "nickname": "h_bot",
+        "owner": "username",
+        "cmd_prefix": "!"
+    },
+    "discord": {
+        "server": "<server id>",
+        "channel": "<channel id>",
+        "token": "<bot token>",
+        "owner": "username",
+        "cmd_prefix": "!"
+    }
+}
