@@ -21,5 +21,11 @@ Usage
 -----
 
 ```sh
-python app.py
+pixis@kali:~/Tools/discord-irc-sync $ python app.py 
+[IRC] Logged in as:
+[IRC] hacknbot
+[Discord] Logged in as:
+[Discord] irc-sync
+[Discord] <pixis> : Can you hear me IRC Tom? 😃
+[IRC] <pixis> : Yes, I can
 ```
