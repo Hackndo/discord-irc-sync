@@ -3,7 +3,12 @@
 Description
 -----------
 
-Python implementation of a synchronization between IRC and Discord
+**Python3.5+** implementation of a synchronization between IRC and Discord
+
+Requirements
+------------
+
+* Python 3.5+
 
 Initialization
 --------------
@@ -14,7 +19,7 @@ cd discord-irc-sync
 mkvirtualenv discordirc -p $(which python3)
 pip install -r requirements.txt
 cp config/config.json.dist config/config.json
-# Edit config.json
+# Edit config/config.json
 ```
 
 Usage
