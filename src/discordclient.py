@@ -21,7 +21,6 @@ class DiscordClient(discord.Client):
     def set_irc(self, irc):
         self.h_irc = irc
 
-    @asyncio.coroutine
     async def on_ready(self):
         print("[Discord] Logged in as:")
         print("[Discord] " + self.user.name)
@@ -80,7 +79,6 @@ class DiscordClient(discord.Client):
         
         self.h_channel = find_channel[0]
 
-    @asyncio.coroutine
     async def on_message(self, message):
         # Don't reply to itself
         if message.author == self.user:
