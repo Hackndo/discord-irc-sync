@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# coding: utf-8
 
 import irc.bot
 import threading
@@ -76,11 +77,11 @@ class IRCClient(irc.bot.SingleServerIRCBot):
         self.h_raw_send_to_discord(message)
 
     def h_send_to_discord(self, username, content):
-        message = "<%s> : %s" % (username, content)
+        message = "<**%s**> : %s" % (username, content)
         print("[IRC] %s" % message)
 
         if content.startswith(self.h_cmd_prefix):
-            self.h_discord.h_send_message("Cmd by %s :" % username)
+            self.h_discord.h_send_message("Cmd by **%s**:" % username)
             self.h_discord.h_send_message(content)
         else:
             self.h_discord.h_send_message(message)
