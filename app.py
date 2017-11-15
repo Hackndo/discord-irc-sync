@@ -3,8 +3,8 @@
 import json
 import os
 
-from client.ircclient import IRCClient
-from client.discordclient import DiscordClient
+from src.ircclient import IRCClient
+from src.discordclient import DiscordClient
 
 with open(os.path.join("config", "config.json"), encoding="utf-8") as f:
     settings = json.loads(f.read())

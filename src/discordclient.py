@@ -3,6 +3,7 @@
 import discord
 import asyncio
 import threading
+from .formatting import D2IFormatter
 
 class DiscordClient(discord.Client):
     def __init__(self, configuration):
@@ -11,6 +12,7 @@ class DiscordClient(discord.Client):
         self.h_channel_id = configuration['channel']
         self.h_owner = configuration["owner"]
         self.h_cmd_prefix = configuration["cmd_prefix"]
+        self.h_formatter = D2IFormatter()
         self.h_channel = None
         self.h_irc = None
 
@@ -23,7 +25,6 @@ class DiscordClient(discord.Client):
     async def on_ready(self):
         print("[Discord] Logged in as:")
         print("[Discord] " + self.user.name)
-        print("[Discord] " + self.user.id)
 
         if len(self.servers) == 0:
             print("[Discord] Bot is not yet in any server.")
@@ -89,9 +90,8 @@ class DiscordClient(discord.Client):
         if message.channel != self.h_channel:
             return
 
-
         username = message.author.name
-        content = message.content.strip()
+        content = message.clean_content.strip()
 
         # Admin commands
         if message.author.name == self.h_owner:
@@ -105,6 +105,7 @@ class DiscordClient(discord.Client):
         self.h_send_to_irc(username, content)
 
     def h_send_to_irc(self, username, content):
+        content = self.h_format_text(content)
         message = "<%s> : %s" % (username, content)
         print("[Discord] %s" % message)
 
@@ -115,14 +116,13 @@ class DiscordClient(discord.Client):
             self.h_irc.h_send_message(message)
 
     def h_send_message(self, message):
-        print([message])
         asyncio.run_coroutine_threadsafe(self.h_send_message_async(message), self.loop)
 
     async def h_send_message_async(self, message):
-        await self.send_message(self.h_channel, message.strip())
+        await self.send_message(self.h_channel, message)
 
     def h_format_text(self, message):
-        return
+        return self.h_formatter.format(message)
 
     def h_run(self):
         self.run(self.h_token)

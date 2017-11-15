@@ -2,6 +2,7 @@
 
 import irc.bot
 import threading
+from .formatting import I2DFormatter
 
 irc.client.ServerConnection.buffer_class.errors = 'replace'
 
@@ -14,6 +15,7 @@ class IRCClient(irc.bot.SingleServerIRCBot):
         self.h_channel = configuration["channel"]
         self.h_owner = configuration["owner"]
         self.h_cmd_prefix = configuration["cmd_prefix"]
+        self.h_formatter = I2DFormatter()
         self.h_discord = None
         self.h_connection = None
 
@@ -42,7 +44,24 @@ class IRCClient(irc.bot.SingleServerIRCBot):
 
         self.h_send_to_discord(username, content)
 
-    def h_send_to_discord(self, username, content):
+    def on_action(self, server, event):
+        username = event.source.nick
+        content = event.arguments[0].strip()
+
+        # Don't reply to itself
+        if username == self.h_nickname:
+            pass
+
+        # Admin commands
+        if username == self.h_owner:
+            pass
+
+        self.h_send_to_discord(username, content, "action")
+
+    def h_send_to_discord(self, username, content, type_msg="pubmsg"):
+        content = self.h_format_text(content)
+        if type_msg=="action":
+            content = "*" + content + "*"
         message = "<%s> : %s" % (username, content)
         print("[IRC] %s" % message)
 
@@ -56,8 +75,7 @@ class IRCClient(irc.bot.SingleServerIRCBot):
         self.h_connection.privmsg(self.h_channel, message)
 
     def h_format_text(self, message):
-        # @TODO Bold, Underline, Strikethrough 
-        return message
+        return self.h_formatter.format(message)
         
     def h_run(self):
         t = threading.Thread(target=self.start)
