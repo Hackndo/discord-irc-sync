@@ -34,4 +34,5 @@ Usage
 TODO
 ----
 
-- [ ] Format message from-to IRC-Discord (Bold, Underline, Strikethrough)
+- [X] Format message from Discord to IRC
+- [ ] Format message from IRC to Discord : Difficult because not everything is possible, especially when formatting is overlapping
