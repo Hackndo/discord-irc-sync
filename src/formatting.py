@@ -56,13 +56,14 @@ class I2DFormatter: # @TODO
 
     def sanitize(self, message):
         replacements = [('\\','\\\\'), ('*','\\*'), ('_','\\_')]
-        return replace_all(message, replacements)
+        message = replace_all(message, replacements)
+        return re.sub(
+                r'\x03\d{2}(?:,\d{2})'
+                r'|'
+                r'['+ IRC_BOLD + IRC_UNDERLINE + IRC_ITALIC + IRC_RESET +']',
+                '',
+                message)
 
     def format(self, message):
         message = self.sanitize(message)
-        message = re.sub(
-            r'\x03\d{2}(?:,\d{2})'
-            r'|'
-            r'['+ IRC_BOLD + IRC_UNDERLINE + IRC_ITALIC + IRC_RESET +']',
-            '', message)
         return message
