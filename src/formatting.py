@@ -44,7 +44,8 @@ class D2IFormatter():
         return self.syntax['underline']['irc'] + matchobj.group(2) + self.syntax['underline']['irc'] 
 
     def sanitize(self, message):
-        return re.sub(r'\\([^A-Za-z0-9])',r'\1', message)
+        message = re.sub(r'\\([^A-Za-z0-9])',r'\1', message)
+        return message
 
     def format(self, message):
         message = self.sanitize(message)
