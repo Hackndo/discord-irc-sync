@@ -91,7 +91,7 @@ class DiscordClient(discord.Client):
             return
 
         username = message.author.name
-        content = message.clean_content.strip()
+        content = self.h_format_text(message.clean_content.strip())
 
         # Admin commands
         if message.author.name == self.h_owner:
@@ -102,10 +102,10 @@ class DiscordClient(discord.Client):
         """
         Send to IRC
         """
-        self.h_send_to_irc(username, content)
+        for c in content.split('\n'):
+            self.h_send_to_irc(username, c)
 
     def h_send_to_irc(self, username, content):
-        content = self.h_format_text(content)
         message = "<%s> : %s" % (username, content)
         print("[Discord] %s" % message)
 
