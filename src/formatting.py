@@ -43,8 +43,11 @@ class D2IFormatter():
     def replace_underline(self, matchobj):
         return self.syntax['underline']['irc'] + matchobj.group(2) + self.syntax['underline']['irc'] 
 
+    def sanitize(self, message):
+        return re.sub(r'\\([^A-Za-z0-9])',r'\1', message)
 
     def format(self, message):
+        message = self.sanitize(message)
         for rule in self.rules:
             regex = self.syntax[rule]['re']
             m = regex.search(message)
