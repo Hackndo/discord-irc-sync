@@ -3,6 +3,8 @@
 
 import irc.bot
 import threading
+import time
+
 from .formatting import I2DFormatter
 
 irc.client.ServerConnection.buffer_class.errors = 'replace'
@@ -57,7 +59,7 @@ class IRCClient(irc.bot.SingleServerIRCBot):
         if username == self.h_owner:
             pass
 
-        self.h_send_to_discord(username, "*"+content+"*")
+        self.h_raw_send_to_discord("\\* **" + username + "** " + content)
 
     def on_join(self, server, event):
         if event.source.nick == self.h_nickname:
@@ -78,7 +80,7 @@ class IRCClient(irc.bot.SingleServerIRCBot):
         self.h_raw_send_to_discord(message)
 
     def on_kick(self, server, event):
-        message = "*%s* has been kicked of the channel (%s)" % (event.arguments[0],event.arguments[1])
+        message = "*%s* has been kicked of the channel (%s)" % (event.arguments[0], event.arguments[1])
         self.h_raw_send_to_discord(message)
         time.sleep(2)
         server.join(self.h_channel)
