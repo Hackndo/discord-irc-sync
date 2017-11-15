@@ -78,8 +78,8 @@ class IRCClient(irc.bot.SingleServerIRCBot):
         self.h_raw_send_to_discord(message)
 
     def on_kick(self, server, event):
-        # message = "*%s* has been kicked of the channel" % event.source.nick
-        #self.h_raw_send_to_discord(message)
+        message = "*%s* has been kicked of the channel (%s)" % (event.arguments[0],event.arguments[1])
+        self.h_raw_send_to_discord(message)
         time.sleep(2)
         server.join(self.h_channel)
 
