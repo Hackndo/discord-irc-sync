@@ -32,7 +32,7 @@ class IRCClient(irc.bot.SingleServerIRCBot):
 
     def on_pubmsg(self, server, event):
         username = event.source.nick
-        content = event.arguments[0].strip()
+        content = self.h_format_text(event.arguments[0].strip())
 
         # Don't reply to itself
         if username == self.h_nickname:
@@ -46,7 +46,7 @@ class IRCClient(irc.bot.SingleServerIRCBot):
 
     def on_action(self, server, event):
         username = event.source.nick
-        content = event.arguments[0].strip()
+        content = self.h_format_text(event.arguments[0].strip())
 
         # Don't reply to itself
         if username == self.h_nickname:
@@ -56,12 +56,26 @@ class IRCClient(irc.bot.SingleServerIRCBot):
         if username == self.h_owner:
             pass
 
-        self.h_send_to_discord(username, content, "action")
+        self.h_send_to_discord(username, "*"+content+"*")
 
-    def h_send_to_discord(self, username, content, type_msg="pubmsg"):
-        content = self.h_format_text(content)
-        if type_msg=="action":
-            content = "*" + content + "*"
+    def on_join(self, server, event):
+        message = "*%s* has joined the channel" % event.source.nick
+        self.h_raw_send_to_discord(message)
+
+    def on_part(self, server, event):
+        print(event)
+        message = "*%s* has left the channel (%s)" % (event.source.nick, event.arguments[0])
+        self.h_raw_send_to_discord(message)
+
+    def on_quit(self, server, event):
+        message = "*%s* has quit the channel" % event.source.nick
+        self.h_raw_send_to_discord(message)
+
+    def on_kick(self, server, event):
+        message = "*%s* has been kicked of the channel" % event.source.nick
+        self.h_raw_send_to_discord(message)
+
+    def h_send_to_discord(self, username, content):
         message = "<%s> : %s" % (username, content)
         print("[IRC] %s" % message)
 
@@ -70,6 +84,10 @@ class IRCClient(irc.bot.SingleServerIRCBot):
             self.h_discord.h_send_message(content)
         else:
             self.h_discord.h_send_message(message)
+
+    def h_raw_send_to_discord(self, message):
+        print("[IRC] %s" % message)
+        self.h_discord.h_send_message(message)
 
     def h_send_message(self, message):
         self.h_connection.privmsg(self.h_channel, message)
