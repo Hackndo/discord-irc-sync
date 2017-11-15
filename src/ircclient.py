@@ -55,7 +55,7 @@ class IRCClient(irc.bot.SingleServerIRCBot):
 
         # Admin commands
         if username == self.h_owner:
-            return
+            pass
 
         self.h_send_to_discord(username, "*"+content+"*")
 
