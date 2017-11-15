@@ -66,4 +66,37 @@ class I2DFormatter: # @TODO
 
     def format(self, message):
         message = self.sanitize(message)
-        return message
+        char_list = [(c,0) for c in message]
+        counter = 0
+        while counter < len(char_list):
+            char_tuple=char_list[counter]
+            
+            if char_tuple[0] in self.symbols: # Formatting character
+                del char_list[counter]
+                for i in range(counter, len(char_list)):
+                    if self.symbols[char_tuple[0]]:
+                        char_list[i] = (char_list[i][0], char_list[i][1]^self.symbols[char_tuple[0]])
+                    else:
+                        char_list[i] = (char_list[i][0], 0)
+            else: # Common character. Goto next one
+                counter+=1
+        res = ""
+        add = []
+        for key, char_tuple in enumerate(char_list):
+            if key == 0:
+                if char_tuple[1] & self.B_FLAG:
+                    add.append(DSC_BOLD)
+                if char_tuple[1] & self.I_FLAG:
+                    add.append(DSC_ITALIC)
+                if char_tuple[1] & self.U_FLAG:
+                    add.append(DSC_UNDERLINE)
+            else:
+                if char_tuple[1] & self.B_FLAG ^ char_list[key-1][1] & self.B_FLAG:
+                    add.append(DSC_BOLD)
+                if char_tuple[1] & self.I_FLAG ^ char_list[key-1][1] & self.I_FLAG:
+                    add.append(DSC_ITALIC)
+                if char_tuple[1] & self.U_FLAG ^ char_list[key-1][1] & self.U_FLAG:
+                    add.append(DSC_UNDERLINE)
+            print(add)
+            add = []
+        print(res)
