@@ -37,11 +37,11 @@ class IRCClient(irc.bot.SingleServerIRCBot):
 
         # Don't reply to itself
         if username == self.h_nickname:
-            pass
+            return
 
         # Admin commands
         if username == self.h_owner:
-            pass
+            return
 
         self.h_send_to_discord(username, content)
 
@@ -51,33 +51,37 @@ class IRCClient(irc.bot.SingleServerIRCBot):
 
         # Don't reply to itself
         if username == self.h_nickname:
-            pass
+            return
 
         # Admin commands
         if username == self.h_owner:
-            pass
+            return
 
         self.h_send_to_discord(username, "*"+content+"*")
 
     def on_join(self, server, event):
+        if event.source.nick == self.h_nickname:
+            return
         message = "*%s* has joined the channel" % event.source.nick
         self.h_raw_send_to_discord(message)
 
     def on_part(self, server, event):
-        print(event)
+        if event.source.nick == self.h_nickname:
+            return
         message = "*%s* has left the channel (%s)" % (event.source.nick, event.arguments[0])
         self.h_raw_send_to_discord(message)
 
     def on_quit(self, server, event):
+        if event.source.nick == self.h_nickname:
+            return
         message = "*%s* has quit the channel" % event.source.nick
         self.h_raw_send_to_discord(message)
 
     def on_kick(self, server, event):
-        if event.source.nick == self.h_nickname:
-            self.connection.join(self.h_channel)
-        else:
-            message = "*%s* has been kicked of the channel" % event.source.nick
-            self.h_raw_send_to_discord(message)
+        # message = "*%s* has been kicked of the channel" % event.source.nick
+        self.h_raw_send_to_discord(message)
+        time.sleep(2)
+        server.join(self.h_channel)
 
     def h_send_to_discord(self, username, content):
         message = "<**%s**> %s" % (username, content)
