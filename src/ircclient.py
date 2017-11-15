@@ -80,7 +80,7 @@ class IRCClient(irc.bot.SingleServerIRCBot):
             self.h_raw_send_to_discord(message)
 
     def h_send_to_discord(self, username, content):
-        message = "<**%s**> : %s" % (username, content)
+        message = "<**%s**> %s" % (username, content)
         print("[IRC] %s" % message)
 
         if content.startswith(self.h_cmd_prefix):
