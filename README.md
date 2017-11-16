@@ -62,8 +62,8 @@ Configuration file looks like this
         "cmd_prefix": "!"             // Channel commands prefix (if any)
     },
     "formatting": {
-        "irc_to_discord": false,      // Keep bold|underlin|italic from IRC to Discord
-        "discord_to_irc": true        // Keep bold|underlin|italic from Discord to IRC
+        "irc_to_discord": false,      // Keep bold|underline|italic from IRC to Discord
+        "discord_to_irc": true        // Keep bold|underline|italic from Discord to IRC
     }
 }
 
