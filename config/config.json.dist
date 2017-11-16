@@ -13,5 +13,9 @@
         "token": "<bot token>",
         "owner": "username",
         "cmd_prefix": "!"
+    },
+    "formatting": {
+        "irc_to_discord": false,
+        "discord_to_irc": true
     }
 }

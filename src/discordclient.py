@@ -7,12 +7,12 @@ from .formatting import D2IFormatter
 
 class DiscordClient(discord.Client):
     def __init__(self, configuration):
-        self.h_token = configuration['token']
-        self.h_server_id = configuration['server']
-        self.h_channel_id = configuration['channel']
-        self.h_owner = configuration["owner"]
-        self.h_cmd_prefix = configuration["cmd_prefix"]
-        self.h_formatter = D2IFormatter()
+        self.h_token = configuration['discord']['token']
+        self.h_server_id = configuration['discord']['server']
+        self.h_channel_id = configuration['discord']['channel']
+        self.h_owner = configuration['discord']["owner"]
+        self.h_cmd_prefix = configuration['discord']["cmd_prefix"]
+        self.h_formatter = D2IFormatter(configuration)
         self.h_channel = None
         self.h_irc = None
 
@@ -80,20 +80,28 @@ class DiscordClient(discord.Client):
         self.h_channel = find_channel[0]
 
     async def on_message(self, message):
-        # Don't reply to itself
+        """
+        Don't reply to itself
+        """
         if message.author == self.user:
             return
 
-        # Only forward messages from configuration channel
+        """
+        Only forward messages from configuration channel
+        """
         if message.channel != self.h_channel:
             return
 
         username = message.author.name
         if message.author.nick is not None:
             username = message.author.nick
-        content = self.h_format_text(message.clean_content.strip())
 
-        # Admin commands
+        content = message.clean_content
+
+
+        """
+        Admin commands
+        """
         if message.author.name == self.h_owner:
             if content == "!quit":
                 await self.close()
@@ -103,11 +111,12 @@ class DiscordClient(discord.Client):
         Send to IRC
         """
         for c in content.split('\n'):
-            self.h_send_to_irc(username, c)
+            message = "<%s> : %s" % (username, c)
+            print("[Discord] %s" % message)
+            self.h_send_to_irc(username, self.h_format_text(c.strip()))
 
     def h_send_to_irc(self, username, content):
         message = "<%s> : %s" % (username, content)
-        print("[Discord] %s" % message)
 
         if content.startswith(self.h_cmd_prefix):
             self.h_irc.h_send_message("Cmd by %s :" % username)
