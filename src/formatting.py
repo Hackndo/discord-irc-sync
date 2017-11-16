@@ -1,9 +1,9 @@
 import re
-from .utils import replace_all, is_included
+from src.utils import replace_all, is_included
 
 IRC_BOLD, IRC_ITALIC, IRC_UNDERLINE, IRC_RESET = ("\x02","\x1d", "\x1f", "\x0f")
 DSC_BOLD, DSC_ITALIC, DSC_UNDERLINE = ("**","*","__")
-WORD_ELEMENTS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
 
 class D2IFormatter():
 
@@ -31,6 +31,9 @@ class D2IFormatter():
 
     rules = ['double_emphasis', 'emphasis', 'underline']
 
+    def __init__(self, configuration):
+        self.doformat = configuration['formatting']['discord_to_irc']
+
     def replace_double_emphasis(self, matchobj):
         return self.syntax['double_emphasis']['irc'] + matchobj.group(2) + self.syntax['double_emphasis']['irc'] 
 
@@ -50,6 +53,12 @@ class D2IFormatter():
 
     def format(self, message):
         message = self.sanitize(message)
+        if not self.doformat:
+            return message
+
+        """
+        Surround formatted groups with IRC flags based on matching regex
+        """
         for rule in self.rules:
             regex = self.syntax[rule]['re']
             m = regex.search(message)
@@ -68,17 +77,28 @@ class I2DFormatter:
         IRC_RESET: False
     }
 
+    def __init__(self, configuration):
+        self.doformat = configuration['formatting']['irc_to_discord']
+
     def sanitize(self, message):
+        """
+        Remove color tags, and format tags if no formatting setting
+        Escape discord format tags
+        """
         replacements = [('\\','\\\\'), ('*','\\*'), ('_','\\_')]
         message = replace_all(message, replacements)
-        return re.sub(
-                r'\x03\d{2}(?:,\d{2})'
-                r'|'
-                r'['+ IRC_BOLD + IRC_UNDERLINE + IRC_ITALIC + IRC_RESET +']',
-                '',
-                message)
+        if not self.doformat:
+            message = re.sub(r'['+ IRC_BOLD + IRC_UNDERLINE + IRC_ITALIC + IRC_RESET +']', '', message)
+        return re.sub(r'\x03\d{2}(?:,\d{2})', '', message)
 
     def format(self, message):
+        message = self.sanitize(message)
+        if not self.doformat:
+            return message
+
+        """
+        Create dict with all characters and their format
+        """
         char_list = [(c,0) for c in message]
         counter = 0
         while counter < len(char_list):
@@ -94,56 +114,66 @@ class I2DFormatter:
             else: # Common character. Goto next one
                 counter+=1
         
+        """
+        Create intervals of formatting types
+        """
         intervals = []
-        bi = None
-        ui = None
-        ii = None
+        bold_i = None
+        underline_i = None
+        italic_i = None
         for key, char_tuple in enumerate(char_list):
             if key == 0:
                 if char_tuple[1] & self.B_FLAG:
-                    bi = [DSC_BOLD, 0, False]
+                    bold_i = [DSC_BOLD, 0, False]
                 if char_tuple[1] & self.I_FLAG:
-                    ii = [DSC_ITALIC, 0, False]
+                    italic_i = [DSC_ITALIC, 0, False]
                 if char_tuple[1] & self.U_FLAG:
-                    ui = [DSC_UNDERLINE, 0, False]
+                    underline_i = [DSC_UNDERLINE, 0, False]
             else:
                 if char_tuple[1] & self.B_FLAG ^ char_list[key-1][1] & self.B_FLAG:
-                    if bi is not None:
-                        bi[2] = key
-                        intervals.append(bi)
-                        bi = None
+                    if bold_i is not None:
+                        bold_i[2] = key
+                        intervals.append(bold_i)
+                        bold_i = None
                     else:
-                        bi = [DSC_BOLD, key, False]
+                        bold_i = [DSC_BOLD, key, False]
                 if char_tuple[1] & self.I_FLAG ^ char_list[key-1][1] & self.I_FLAG:
-                    if ii is not None:
-                        ii[2] = key
-                        intervals.append(ii)
-                        ii = None
+                    if italic_i is not None:
+                        italic_i[2] = key
+                        intervals.append(italic_i)
+                        italic_i = None
                     else:
-                        ii = [DSC_ITALIC, key, False]
+                        italic_i = [DSC_ITALIC, key, False]
                 if char_tuple[1] & self.U_FLAG ^ char_list[key-1][1] & self.U_FLAG:
-                    if ui is not None:
-                        ui[2] = key
-                        intervals.append(ui)
-                        ui = None
+                    if underline_i is not None:
+                        underline_i[2] = key
+                        intervals.append(underline_i)
+                        underline_i = None
                     else:
-                        ui = [DSC_UNDERLINE, key, False]
+                        underline_i = [DSC_UNDERLINE, key, False]
 
-        # Close unclosed intervals
-        if bi is not None:
-            bi[2] = len(char_list)
-            intervals.append(bi)
-        if ii is not None:
-            ii[2] = len(char_list)
-            intervals.append(ii)
-        if ui is not None:
-            ui[2] = len(char_list)
-            intervals.append(ui)
+        """
+        Close unclosed intervals
+        """
+        if bold_i is not None:
+            bold_i[2] = len(char_list)
+            intervals.append(bold_i)
+        if italic_i is not None:
+            italic_i[2] = len(char_list)
+            intervals.append(italic_i)
+        if underline_i is not None:
+            underline_i[2] = len(char_list)
+            intervals.append(underline_i)
 
-        # No formatting necessary
+        """
+        Return if no formatting necessary
+        """
         if intervals == []:
-            return self.sanitize(message)
+            return message
         
+        """
+        Order intervals (not included > included)
+        """
         key = 0
         ordered_intervals = [] if len(intervals) > 1 else intervals
         while len(intervals) > 1:
@@ -161,6 +191,9 @@ class I2DFormatter:
             if len(intervals) == 1:
                 ordered_intervals.append(intervals[0])
         
+        """
+        Position the formatting elements
+        """
         res = ''.join([c[0] for c in char_list])
         add = []
         for c in range(len(res)+1):
@@ -173,10 +206,8 @@ class I2DFormatter:
                 if c == i[1]:
                     add[c].append(i[0])
 
-        result = ''.join(''.join(add[i]) + res[i] for i in range(len(res)))
-        return self.sanitize(result)
-
-"""
-print(I2DFormatter().format(IRC_BOLD + "no" + IRC_BOLD + IRC_UNDERLINE + "o" + IRC_UNDERLINE + "rmal " + IRC_BOLD + "bold " + IRC_ITALIC + "boldItalic " + IRC_ITALIC + "bold " + IRC_BOLD + "normal " + IRC_UNDERLINE + "AB" + IRC_ITALIC + "CD" + IRC_UNDERLINE + "EF" + IRC_ITALIC))
-print(I2DFormatter().format(IRC_BOLD + "Haha"))
-"""
+        """
+        Output the final string
+        """
+        result = ''.join(''.join(add[i]) + res[i] for i in range(len(res))) + ''.join(add[len(res)])
+        return result

@@ -12,13 +12,13 @@ irc.client.ServerConnection.buffer_class.errors = 'replace'
 
 class IRCClient(irc.bot.SingleServerIRCBot):
     def __init__(self, configuration):
-        self.h_server = configuration["server"]
-        self.h_port = int(configuration["port"])
-        self.h_nickname = configuration["nickname"]
-        self.h_channel = configuration["channel"]
-        self.h_owner = configuration["owner"]
-        self.h_cmd_prefix = configuration["cmd_prefix"]
-        self.h_formatter = I2DFormatter()
+        self.h_server = configuration['irc']["server"]
+        self.h_port = int(configuration['irc']["port"])
+        self.h_nickname = configuration['irc']["nickname"]
+        self.h_channel = configuration['irc']["channel"]
+        self.h_owner = configuration['irc']["owner"]
+        self.h_cmd_prefix = configuration['irc']["cmd_prefix"]
+        self.h_formatter = I2DFormatter(configuration)
         self.h_discord = None
         self.h_connection = None
 
@@ -37,11 +37,15 @@ class IRCClient(irc.bot.SingleServerIRCBot):
         username = event.source.nick
         content = self.h_format_text(event.arguments[0].strip())
 
-        # Don't reply to itself
+        """
+        Don't reply to itself
+        """
         if username == self.h_nickname:
             return
 
-        # Admin commands
+        """
+        Admin commands
+        """
         if username == self.h_owner:
             pass
 
@@ -51,11 +55,15 @@ class IRCClient(irc.bot.SingleServerIRCBot):
         username = event.source.nick
         content = self.h_format_text(event.arguments[0].strip())
 
-        # Don't reply to itself
+        """
+        Don't reply to itself
+        """
         if username == self.h_nickname:
             return
 
-        # Admin commands
+        """
+        Admin commands
+        """
         if username == self.h_owner:
             pass
 
