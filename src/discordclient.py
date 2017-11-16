@@ -12,8 +12,9 @@ class DiscordClient(discord.Client):
         self.h_channel_id = configuration['discord']['channel']
         self.h_owner = configuration['discord']["owner"]
         self.h_cmd_prefix = configuration['discord']["cmd_prefix"]
-        self.h_output_msg = configuration['irc']["output_msg"]
-        self.h_output_cmd = configuration['irc']["output_cmd"]
+        self.h_output_msg = configuration['discord']["output_msg"]
+        self.h_output_cmd = configuration['discord']["output_cmd"]
+        self.h_log_events = configuration['discord']["log_events"]
         self.h_formatter = D2IFormatter(configuration)
         self.h_channel = None
         self.h_irc = None
@@ -94,9 +95,7 @@ class DiscordClient(discord.Client):
         if message.channel != self.h_channel:
             return
 
-        username = message.author.name
-        if message.author.nick is not None:
-            username = message.author.nick
+        username = self.get_nick(message.author)
 
         content = message.clean_content
 
@@ -116,6 +115,89 @@ class DiscordClient(discord.Client):
             message = "<%s> : %s" % (username, c)
             print("[Discord] %s" % message)
             self.h_send_to_irc(username, self.h_format_text(c.strip()))
+
+    async def on_member_join(self, member):
+        """
+        Don't update itself
+        """
+        if member == self.user:
+            return
+
+        """
+        Don't log if not set
+        """
+        if not self.h_log_events:
+            return
+
+        username = self.get_nick(member)
+
+        message = self.h_format_text("*%s* has joined the server" % username)
+
+        self.h_raw_send_to_irc(message)
+
+
+    async def on_member_remove(self, member):
+        """
+        Don't update itself
+        """
+        if member == self.user:
+            return
+
+        """
+        Don't log if not set
+        """
+        if not self.h_log_events:
+            return
+
+        username = self.get_nick(member)
+
+        message = self.h_format_text("*%s* has quit the server" % username)
+
+        self.h_raw_send_to_irc(message)
+
+    async def on_member_update(self, member_before, member_after):
+        """
+        Don't update itself
+        """
+        if member_before == self.user:
+            return
+
+        """
+        Don't log if not set
+        """
+        if not self.h_log_events:
+            return
+
+        username_b = self.get_nick(member_before)
+        username_a = self.get_nick(member_after)
+
+        """
+        Nick change
+        """
+        if username_a != username_b:
+            message = self.h_format_text("*%s* is now known as *%s*" % (username_b, username_a))
+            self.h_raw_send_to_irc(message)
+        username = username_b
+
+        """
+        Status change
+        """
+        if member_before.status == discord.Status.offline and member_after.status != discord.Status.offline:
+            message = self.h_format_text("*%s* has joined" % (username,))
+            self.h_raw_send_to_irc(message)
+        if member_before.status != discord.Status.offline and member_after.status == discord.Status.offline:
+            message = self.h_format_text("*%s* has quit" % (username,))
+            self.h_raw_send_to_irc(message)
+
+    def get_nick(self, member):
+        if member.nick is not None:
+            return member.nick
+        return member.name
+
+
+    def h_raw_send_to_irc(self, message):
+        print("[Discord] %s" % message)
+        self.h_irc.h_send_message(message)
 
     def h_send_to_irc(self, username, content):
         message = self.h_output_msg.replace(":username:", username).replace(":message:", content)

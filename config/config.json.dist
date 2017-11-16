@@ -17,7 +17,8 @@
         "owner": "username",
         "cmd_prefix": "!",
         "output_msg": "<:username:> :message:",
-        "output_cmd": "CMD by :username:"
+        "output_cmd": "CMD by :username:",
+        "log_events": true
     },
     "formatting": {
         "irc_to_discord": false,
