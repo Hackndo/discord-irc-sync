@@ -39,5 +39,9 @@ Usage
 TODO
 ----
 
-- [X] ~~Format message from Discord to IRC~~
-- [X] ~~Format message from IRC to Discord : Difficult because not everything is possible, especially when formatting is overlapping~~
+- [X] Format message from Discord to IRC~~
+- [X] Format message from IRC to Discord : Difficult because not everything is possible, especially when formatting is overlapping
+- [ ] Multi channel
+- [ ] Multi server
+- [ ] Dynamically relaod conf when changed
+- [ ] Change conf with IRC or Discord commands
