@@ -56,7 +56,7 @@ class D2IFormatter():
                 message = regex.sub(getattr(self, 'replace_%s' % rule), message)
         return message
 
-class I2DFormatter: # @TODO
+class I2DFormatter: 
 
     def sanitize(self, message):
         replacements = [('\\','\\\\'), ('*','\\*'), ('_','\\_')]
