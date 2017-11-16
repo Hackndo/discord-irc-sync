@@ -95,7 +95,9 @@ class DiscordClient(discord.Client):
         username = message.author.name
         if message.author.nick is not None:
             username = message.author.nick
+
         content = message.clean_content
+
 
         """
         Admin commands
