@@ -47,23 +47,28 @@ Configuration file looks like this
 ```javascript
 {
     "irc": {
-        "server": "irc.server.com",   // IRC Server
-        "port": "6667",               // IRC Port
-        "channel": "#channel",        // IRC Channel
-        "nickname": "h_bot",          // Bot Nickname
-        "owner": "username",          // Bot Owner Nickname (admin commands)
-        "cmd_prefix": "!"             // Channel commands prefix (if any)
+        "server": "irc.server.com",                 // IRC Server
+        "port": "6667",                             // IRC Port
+        "channel": "#channel",                      // IRC Channel
+        "nickname": "h_bot",                        // Bot Nickname
+        "owner": "username",                        // Bot Owner Nickname (admin commands)
+        "cmd_prefix": "!",                          // Channel commands prefix (if any)
+        "output_msg": "<:username:> :message:",     // Message format when IRC message is received
+        "output_cmd": "CMD by :username:",          // Message format when IRC command is received
+        "log_events": true                          // Send part/join/kick/quit to discord
     },
     "discord": {
-        "server": "<server id>",      // Discord Server ID
-        "channel": "<channel id>",    // Discord Channel ID
-        "token": "<bot token>",       // Discord Bot Token
-        "owner": "username",          // Discord Bot Owner username (admin commands)
-        "cmd_prefix": "!"             // Channel commands prefix (if any)
+        "server": "<server id>",                    // Discord Server ID
+        "channel": "<channel id>",                  // Discord Channel ID
+        "token": "<bot token>",                     // Discord Bot Token
+        "owner": "username",                        // Discord Bot Owner username (admin commands)
+        "cmd_prefix": "!",                          // Channel commands prefix (if any)
+        "output_msg": "<:username:> :message:",     // Message format when IRC message is received
+        "output_cmd": "CMD by :username:"           // Message format when IRC command is received
     },
     "formatting": {
-        "irc_to_discord": false,      // Keep bold|underline|italic from IRC to Discord
-        "discord_to_irc": true        // Keep bold|underline|italic from Discord to IRC
+        "irc_to_discord": false,                    // Keep bold|underline|italic from IRC to Discord
+        "discord_to_irc": true                      // Keep bold|underline|italic from Discord to IRC
     }
 }
 
