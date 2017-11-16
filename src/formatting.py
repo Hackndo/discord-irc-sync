@@ -1,8 +1,9 @@
 import re
-from .utils import replace_all
+from .utils import replace_all, is_included
 
 IRC_BOLD, IRC_ITALIC, IRC_UNDERLINE, IRC_RESET = ("\x02","\x1d", "\x1f", "\x0f")
 DSC_BOLD, DSC_ITALIC, DSC_UNDERLINE = ("**","*","__")
+WORD_ELEMENTS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 class D2IFormatter():
 
@@ -56,7 +57,16 @@ class D2IFormatter():
                 message = regex.sub(getattr(self, 'replace_%s' % rule), message)
         return message
 
-class I2DFormatter: 
+class I2DFormatter:
+
+    B_FLAG, I_FLAG, U_FLAG = (0x01, 0x02, 0x04)
+
+    symbols = {
+        IRC_BOLD: B_FLAG,
+        IRC_ITALIC: I_FLAG,
+        IRC_UNDERLINE: U_FLAG,
+        IRC_RESET: False
+    }
 
     def sanitize(self, message):
         replacements = [('\\','\\\\'), ('*','\\*'), ('_','\\_')]
@@ -69,7 +79,6 @@ class I2DFormatter:
                 message)
 
     def format(self, message):
-        message = self.sanitize(message)
         char_list = [(c,0) for c in message]
         counter = 0
         while counter < len(char_list):
@@ -84,23 +93,90 @@ class I2DFormatter:
                         char_list[i] = (char_list[i][0], 0)
             else: # Common character. Goto next one
                 counter+=1
-        res = ""
-        add = []
+        
+        intervals = []
+        bi = None
+        ui = None
+        ii = None
         for key, char_tuple in enumerate(char_list):
             if key == 0:
                 if char_tuple[1] & self.B_FLAG:
-                    add.append(DSC_BOLD)
+                    bi = [DSC_BOLD, 0, False]
                 if char_tuple[1] & self.I_FLAG:
-                    add.append(DSC_ITALIC)
+                    ii = [DSC_ITALIC, 0, False]
                 if char_tuple[1] & self.U_FLAG:
-                    add.append(DSC_UNDERLINE)
+                    ui = [DSC_UNDERLINE, 0, False]
             else:
                 if char_tuple[1] & self.B_FLAG ^ char_list[key-1][1] & self.B_FLAG:
-                    add.append(DSC_BOLD)
+                    if bi is not None:
+                        bi[2] = key
+                        intervals.append(bi)
+                        bi = None
+                    else:
+                        bi = [DSC_BOLD, key, False]
                 if char_tuple[1] & self.I_FLAG ^ char_list[key-1][1] & self.I_FLAG:
-                    add.append(DSC_ITALIC)
+                    if ii is not None:
+                        ii[2] = key
+                        intervals.append(ii)
+                        ii = None
+                    else:
+                        ii = [DSC_ITALIC, key, False]
                 if char_tuple[1] & self.U_FLAG ^ char_list[key-1][1] & self.U_FLAG:
-                    add.append(DSC_UNDERLINE)
-            print(add)
-            add = []
-        print(res)
+                    if ui is not None:
+                        ui[2] = key
+                        intervals.append(ui)
+                        ui = None
+                    else:
+                        ui = [DSC_UNDERLINE, key, False]
+
+        # Close unclosed intervals
+        if bi is not None:
+            bi[2] = len(char_list)
+            intervals.append(bi)
+        if ii is not None:
+            ii[2] = len(char_list)
+            intervals.append(ii)
+        if ui is not None:
+            ui[2] = len(char_list)
+            intervals.append(ui)
+
+        # No formatting necessary
+        if intervals == []:
+            return self.sanitize(message)
+        
+        key = 0
+        ordered_intervals = [] if len(intervals) > 1 else intervals
+        while len(intervals) > 1:
+            included = False
+            current = intervals[key]
+            for k_tested, interval in enumerate(intervals[key+1:]):
+                if is_included(current, interval) == 0:
+                    included = True
+                    continue
+            if not included:
+                ordered_intervals.append(intervals[key])
+                del intervals[key]
+            else:
+                key = (key+1)%len(intervals)
+            if len(intervals) == 1:
+                ordered_intervals.append(intervals[0])
+        
+        res = ''.join([c[0] for c in char_list])
+        add = []
+        for c in range(len(res)+1):
+            add.append([])
+        for c in range(len(res)):
+            for i in ordered_intervals[::-1]:
+                if c == i[2]-1:
+                    add[c+1].append(i[0])
+            for i in ordered_intervals:
+                if c == i[1]:
+                    add[c].append(i[0])
+
+        result = ''.join(''.join(add[i]) + res[i] for i in range(len(res)))
+        return self.sanitize(result)
+
+"""
+print(I2DFormatter().format(IRC_BOLD + "no" + IRC_BOLD + IRC_UNDERLINE + "o" + IRC_UNDERLINE + "rmal " + IRC_BOLD + "bold " + IRC_ITALIC + "boldItalic " + IRC_ITALIC + "bold " + IRC_BOLD + "normal " + IRC_UNDERLINE + "AB" + IRC_ITALIC + "CD" + IRC_UNDERLINE + "EF" + IRC_ITALIC))
+print(I2DFormatter().format(IRC_BOLD + "Haha"))
+"""
