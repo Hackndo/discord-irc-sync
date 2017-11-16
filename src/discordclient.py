@@ -89,6 +89,8 @@ class DiscordClient(discord.Client):
             return
 
         username = message.author.name
+        if message.author.nick is not None:
+            username = message.author.nick
         content = self.h_format_text(message.clean_content.strip())
 
         # Admin commands
