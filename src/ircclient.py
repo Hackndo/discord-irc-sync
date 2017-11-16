@@ -18,6 +18,9 @@ class IRCClient(irc.bot.SingleServerIRCBot):
         self.h_channel = configuration['irc']["channel"]
         self.h_owner = configuration['irc']["owner"]
         self.h_cmd_prefix = configuration['irc']["cmd_prefix"]
+        self.h_log_events = configuration['irc']["log_events"]
+        self.h_output_msg = configuration['irc']["output_msg"]
+        self.h_output_cmd = configuration['irc']["output_cmd"]
         self.h_formatter = I2DFormatter(configuration)
         self.h_discord = None
         self.h_connection = None
@@ -70,35 +73,36 @@ class IRCClient(irc.bot.SingleServerIRCBot):
         self.h_raw_send_to_discord("\\* **" + username + "** " + content)
 
     def on_join(self, server, event):
-        if event.source.nick == self.h_nickname:
+        if event.source.nick == self.h_nickname or not self.h_log_events:
             return
         message = "*%s* has joined the channel" % event.source.nick
         self.h_raw_send_to_discord(message)
 
     def on_part(self, server, event):
-        if event.source.nick == self.h_nickname:
+        if event.source.nick == self.h_nickname or not self.h_log_events:
             return
         message = "*%s* has left the channel (%s)" % (event.source.nick, event.arguments[0])
         self.h_raw_send_to_discord(message)
 
     def on_quit(self, server, event):
-        if event.source.nick == self.h_nickname:
+        if event.source.nick == self.h_nickname or not self.h_log_events:
             return
         message = "*%s* has quit the channel" % event.source.nick
         self.h_raw_send_to_discord(message)
 
     def on_kick(self, server, event):
-        message = "*%s* has been kicked of the channel (%s)" % (event.arguments[0], event.arguments[1])
-        self.h_raw_send_to_discord(message)
+        if self.h_log_events:
+            message = "*%s* has been kicked of the channel (%s)" % (event.arguments[0], event.arguments[1])
+            self.h_raw_send_to_discord(message)
         time.sleep(2)
         server.join(self.h_channel)
 
     def h_send_to_discord(self, username, content):
-        message = "<**%s**> %s" % (username, content)
+        message = self.h_output_msg.replace(":username:", username).replace(":message:", content)
         print("[IRC] %s" % message)
 
         if content.startswith(self.h_cmd_prefix):
-            self.h_discord.h_send_message("Cmd by **%s**:" % username)
+            self.h_discord.h_send_message(self.h_output_cmd.replace(":username:", username))
             self.h_discord.h_send_message(content)
         else:
             self.h_discord.h_send_message(message)

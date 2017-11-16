@@ -12,6 +12,8 @@ class DiscordClient(discord.Client):
         self.h_channel_id = configuration['discord']['channel']
         self.h_owner = configuration['discord']["owner"]
         self.h_cmd_prefix = configuration['discord']["cmd_prefix"]
+        self.h_output_msg = configuration['irc']["output_msg"]
+        self.h_output_cmd = configuration['irc']["output_cmd"]
         self.h_formatter = D2IFormatter(configuration)
         self.h_channel = None
         self.h_irc = None
@@ -116,10 +118,10 @@ class DiscordClient(discord.Client):
             self.h_send_to_irc(username, self.h_format_text(c.strip()))
 
     def h_send_to_irc(self, username, content):
-        message = "<%s> : %s" % (username, content)
+        message = self.h_output_msg.replace(":username:", username).replace(":message:", content)
 
         if content.startswith(self.h_cmd_prefix):
-            self.h_irc.h_send_message("Cmd by %s :" % username)
+            self.h_irc.h_send_message(self.h_output_cmd.replace(":username:", username))
             self.h_irc.h_send_message(content)
         else:
             self.h_irc.h_send_message(message)
