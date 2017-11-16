@@ -39,5 +39,5 @@ Usage
 TODO
 ----
 
-- [X] Format message from Discord to IRC
-- [ ] Format message from IRC to Discord : Difficult because not everything is possible, especially when formatting is overlapping
+- [X] ~~Format message from Discord to IRC~~
+- [X] ~~Format message from IRC to Discord : Difficult because not everything is possible, especially when formatting is overlapping~~
