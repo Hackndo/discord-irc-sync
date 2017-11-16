@@ -63,8 +63,8 @@ Configuration file looks like this
         "token": "<bot token>",                     // Discord Bot Token
         "owner": "username",                        // Discord Bot Owner username (admin commands)
         "cmd_prefix": "!",                          // Channel commands prefix (if any)
-        "output_msg": "<:username:> :message:",     // Message format when IRC message is received
-        "output_cmd": "CMD by :username:"           // Message format when IRC command is received
+        "output_msg": "<:username:> :message:",     // Message format when Discord message is received
+        "output_cmd": "CMD by :username:"           // Message format when Discord command is received
     },
     "formatting": {
         "irc_to_discord": false,                    // Keep bold|underline|italic from IRC to Discord
