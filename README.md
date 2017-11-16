@@ -64,7 +64,8 @@ Configuration file looks like this
         "owner": "username",                        // Discord Bot Owner username (admin commands)
         "cmd_prefix": "!",                          // Channel commands prefix (if any)
         "output_msg": "<:username:> :message:",     // Message format when Discord message is received
-        "output_cmd": "CMD by :username:"           // Message format when Discord command is received
+        "output_cmd": "CMD by :username:",          // Message format when Discord command is received
+        "log_events": true                          // Send part/join/kick/quit to IRC
     },
     "formatting": {
         "irc_to_discord": false,                    // Keep bold|underline|italic from IRC to Discord
