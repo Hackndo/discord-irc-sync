@@ -73,7 +73,7 @@ Usage
 -----
 
 ```
-(discordirc) pixis@kali:~/Tools/discord-irc-sync $ python app.py 
+(discordirc) pixis@kali:~/Tools/discord-irc-sync $ python discord-irc-sync.py 
 [IRC] Logged in as:
 [IRC] hacknbot
 [Discord] Logged in as:
@@ -86,7 +86,7 @@ Usage
 TODO
 ----
 
-- [X] Format message from Discord to IRC~~
+- [X] Format message from Discord to IRC
 - [X] Format message from IRC to Discord : Difficult because not everything is possible, especially when formatting is overlapping
 - [ ] Multi channel
 - [ ] Multi server
