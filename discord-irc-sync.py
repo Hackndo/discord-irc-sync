@@ -25,6 +25,5 @@ discord_client.set_irc(irc_client)
 irc_client.set_discord(discord_client)
 
 
-irc_client.start()
 irc_client.h_run()
 discord_client.h_run()
