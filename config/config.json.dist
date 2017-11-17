@@ -2,6 +2,7 @@
     "irc": {
         "server": "irc.server.com",
         "port": "6667",
+        "ssl": false,
         "channel": "#channel",
         "nickname": "h_bot",
         "owner": "username",
