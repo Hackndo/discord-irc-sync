@@ -92,7 +92,7 @@ class IRCClient(irc.bot.SingleServerIRCBot):
     def on_quit(self, server, event):
         if event.source.nick == self.h_nickname or not self.h_log_events:
             return
-        message = "*%s* has quit the channel" % event.source.nick
+        message = "*%s* has quit the channel (%s)" % (event.source.nick, event.arguments[0])
         self.h_raw_send_to_discord(message)
 
     def on_kick(self, server, event):
