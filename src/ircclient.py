@@ -86,18 +86,27 @@ class IRCClient(irc.bot.SingleServerIRCBot):
     def on_part(self, server, event):
         if event.source.nick == self.h_nickname or not self.h_log_events:
             return
-        message = "*%s* has left the channel (%s)" % (event.source.nick, event.arguments[0])
+        reason = "*"
+        if len(event.arguments) > 0:
+            reason = event.arguments[0]
+        message = "*%s* has left the channel (%s)" % (event.source.nick, reason)
         self.h_raw_send_to_discord(message)
 
     def on_quit(self, server, event):
         if event.source.nick == self.h_nickname or not self.h_log_events:
             return
-        message = "*%s* has quit the channel (%s)" % (event.source.nick, event.arguments[0])
+        reason = "*"
+        if len(event.arguments) > 0:
+            reason = event.arguments[0]
+        message = "*%s* has quit the channel (%s)" % (event.source.nick, reason)
         self.h_raw_send_to_discord(message)
 
     def on_kick(self, server, event):
+        reason = "*"
+        if len(event.arguments) > 1:
+            reason = event.arguments[1]
         if self.h_log_events:
-            message = "*%s* has been kicked of the channel (%s)" % (event.arguments[0], event.arguments[1])
+            message = "*%s* has been kicked of the channel (%s)" % (event.arguments[0], reason)
             self.h_raw_send_to_discord(message)
         time.sleep(2)
         server.join(self.h_channel)
