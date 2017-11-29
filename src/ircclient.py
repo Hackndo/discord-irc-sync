@@ -4,6 +4,7 @@
 import irc.bot
 import threading
 import time
+import ssl
 
 from .formatting import I2DFormatter
 
