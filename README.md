@@ -49,6 +49,7 @@ Configuration file looks like this
     "irc": {
         "server": "irc.server.com",                 // IRC Server
         "port": "6667",                             // IRC Port
+        "ssl": false,                               // Use SSL
         "channel": "#channel",                      // IRC Channel
         "nickname": "h_bot",                        // Bot Nickname
         "owner": "username",                        // Bot Owner Nickname (admin commands)
