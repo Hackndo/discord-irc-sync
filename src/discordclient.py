@@ -199,7 +199,7 @@ class DiscordClient(discord.Client):
     def hl_nicks(self, message):
         for client in self.get_all_members():
             nick = self.get_nick(client)
-            message = re.sub(r'\b(' + nick + r')\b', r'@\1', message)
+            message = re.sub(r'\b(' + nick + r')\b', client.mention, message)
         return message
 
 
