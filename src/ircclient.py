@@ -44,7 +44,7 @@ class IRCClient(irc.bot.SingleServerIRCBot):
 
     def on_pubmsg(self, server, event):
         username = event.source.nick
-        content = self.h_format_text(event.arguments[0].strip())
+        content = self.h_format_text(self.h_discord.hl_nicks(event.arguments[0]).strip())
 
         """
         Don't reply to itself
@@ -113,7 +113,7 @@ class IRCClient(irc.bot.SingleServerIRCBot):
         server.join(self.h_channel)
 
     def h_send_to_discord(self, username, content):
-        message = self.h_output_msg.replace(":username:", username).replace(":message:", self.h_discord.hl_nicks(content))
+        message = self.h_output_msg.replace(":username:", username).replace(":message:", content)
         print("[IRC] %s" % message)
 
         if content.startswith(self.h_cmd_prefix):
