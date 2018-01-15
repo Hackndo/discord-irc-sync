@@ -3,6 +3,8 @@
 import discord
 import asyncio
 import threading
+import re
+
 from .formatting import D2IFormatter
 
 class DiscordClient(discord.Client):
@@ -193,6 +195,12 @@ class DiscordClient(discord.Client):
         if member.nick is not None:
             return member.nick
         return member.name
+
+    def hl_nicks(self, message):
+        for client in self.get_all_members():
+            nick = self.get_nick(client)
+            message = re.sub(r'\b(' + nick + r')\b', r'@\1', message)
+        return message
 
 
     def h_raw_send_to_irc(self, message):

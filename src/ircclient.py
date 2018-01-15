@@ -113,7 +113,7 @@ class IRCClient(irc.bot.SingleServerIRCBot):
         server.join(self.h_channel)
 
     def h_send_to_discord(self, username, content):
-        message = self.h_output_msg.replace(":username:", username).replace(":message:", content)
+        message = self.h_output_msg.replace(":username:", username).replace(":message:", self.h_discord.hl_nicks(content))
         print("[IRC] %s" % message)
 
         if content.startswith(self.h_cmd_prefix):
