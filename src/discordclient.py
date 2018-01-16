@@ -208,7 +208,7 @@ class DiscordClient(discord.Client):
         self.h_irc.h_send_message(message)
 
     def h_send_to_irc(self, username, content):
-        message = self.h_output_msg.replace(":username:", username).replace(":message:", content)
+        message = self.h_output_msg.replace(":username:", username[0] + "|" + username[1:]).replace(":message:", content)
 
         if content.startswith(self.h_cmd_prefix):
             self.h_irc.h_send_message(self.h_output_cmd.replace(":username:", username))
