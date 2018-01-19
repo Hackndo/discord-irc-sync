@@ -202,13 +202,40 @@ class DiscordClient(discord.Client):
             message = re.sub(r'\b(' + nick + r')\b', client.mention, message, flags=re.IGNORECASE)
         return message
 
+    def de_hl_nick(self, nick):
+        special_chars = {
+            'a':'а',
+            'A':'А',
+            'B':'В',
+            'S':'Ѕ',
+            'M':'М',
+            'O':'О',
+            'o':'о',
+            'p':'р',
+            'P':'Р',
+            'c':'с',
+            'y':'у',
+            'x':'х',
+            's':'ѕ',
+            'i':'і',
+            'j':'ј',
+            'e':'е',
+            '0':'ѳ',
+            'h':'Һ'
+        }
+        output = [c for c in nick]
+        for key, letter in enumerate(nick):
+            if letter in special_chars:
+                output[key] = special_chars[letter]
+                return ''.join(output)
+        return nick[0] + "'" + nick[1:]
 
     def h_raw_send_to_irc(self, message):
         print("[Discord] %s" % message)
         self.h_irc.h_send_message(message)
 
     def h_send_to_irc(self, username, content):
-        message = self.h_output_msg.replace(":username:", username[0] + "|" + username[1:]).replace(":message:", content)
+        message = self.h_output_msg.replace(":username:", self.de_hl_nick(username)).replace(":message:", content)
 
         if content.startswith(self.h_cmd_prefix):
             self.h_irc.h_send_message(self.h_output_cmd.replace(":username:", username))
