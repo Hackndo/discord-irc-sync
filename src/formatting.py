@@ -85,7 +85,7 @@ class I2DFormatter:
         Remove color tags, and format tags if no formatting setting
         Escape discord format tags
         """
-        replacements = [('\\','\\\\'), ('*','\\*'), ('_','\\_')]
+        replacements = [('\\','\\\\'), ('*','\\*'), ('_','\\_'), ('~','\\~')]
         message = replace_all(message, replacements)
         if not self.doformat:
             message = re.sub(r'['+ IRC_BOLD + IRC_UNDERLINE + IRC_ITALIC + IRC_RESET +']', '', message)
