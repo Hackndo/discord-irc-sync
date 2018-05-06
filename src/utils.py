@@ -1,3 +1,6 @@
+import json
+import os
+
 def replace_all(text, l):
     for t in l:
         text = text.replace(t[0], t[1])
@@ -16,3 +19,12 @@ def is_included(a,b):
         return -1
     else:
         return 1
+
+def read_config(config_file=None):
+    config_file = os.path.join("config", "config.json") if config_file is None else config_file
+
+    if not os.path.isfile(config_file):
+        sys.exit("File %s doesn't exist" % config_file)
+
+    with open(config_file, encoding="utf-8") as f:
+        return json.loads(f.read())
