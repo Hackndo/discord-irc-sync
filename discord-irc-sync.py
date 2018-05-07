@@ -1,23 +1,18 @@
 #!/usr/bin/env python3
 
 import json
-import os
+import src.utils
 import sys
 
 from src.ircclient import IRCClient
 from src.discordclient import DiscordClient
+from src import utils
 
-config_file = os.path.join("config", "config.json")
 
-if len(sys.argv) == 2:
-    config_file = sys.argv[1]
+config_file = sys.argv[1] if len(sys.argv) == 2 else None
+settings = utils.read_config(config_file)
 
-if not os.path.isfile(config_file):
-    sys.exit("File %s doesn't exist" % config_file)
-
-with open(config_file, encoding="utf-8") as f:
-    settings = json.loads(f.read())
-
+settings['irc']['master_bot'] = True
 discord_client = DiscordClient(settings)
 irc_client = IRCClient(settings)
 
