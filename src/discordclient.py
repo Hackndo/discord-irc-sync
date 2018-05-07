@@ -4,24 +4,60 @@ import discord
 import asyncio
 import threading
 import re
-
+from . import utils
+import random
+from .ircclient import IRCClient
+from .notification import notification
 from .formatting import D2IFormatter
 
 class DiscordClient(discord.Client):
     def __init__(self, configuration):
-        self.h_token = configuration['discord']['token']
-        self.h_server_id = configuration['discord']['server']
+        self.h_token      = configuration['discord']['token']
+        self.h_server_id  = configuration['discord']['server']
         self.h_channel_id = configuration['discord']['channel']
-        self.h_owner = configuration['discord']["owner"]
+        self.h_owner      = configuration['discord']["owner"]
         self.h_cmd_prefix = configuration['discord']["cmd_prefix"]
         self.h_output_msg = configuration['discord']["output_msg"]
         self.h_output_cmd = configuration['discord']["output_cmd"]
         self.h_log_events = configuration['discord']["log_events"]
-        self.h_formatter = D2IFormatter(configuration)
-        self.h_channel = None
-        self.h_irc = None
+        self.h_formatter  = D2IFormatter(configuration)
+        self.h_channel    = None
+        self.h_irc        = None
+        self.users_bots   = {}
+        self.callback     = {
+        'notification'    : {
+            'nick_in_use' :self.unimplemented},
+        'message'         : {
+            'default'     :self.h_send_message,
+            'command'     :self.h_send_command,
+            'raw'         :self.h_send_raw_message},
+        'quit'            : {
+            'default'     :self.on_irc_quit},
+        'kick'            : {
+            'default'     :self.on_irc_kick},
+        'part'            : {
+            'default'     :self.on_irc_part},
+        'join'            : {
+            'default'     :self.on_irc_join},
+        }
 
         super().__init__()
+
+    def unimplemented(self, notif):
+        print(notif)
+        print('This feature is not yet implemented')
+
+    def on_irc_quit(self, notif):
+        pass
+
+    def on_irc_kick(self, notif):
+        pass
+
+    def on_irc_part(self, notif):
+        pass
+
+    def on_irc_join(self, notif):
+        pass
 
     def set_irc(self, irc):
         self.h_irc = irc
@@ -105,6 +141,7 @@ class DiscordClient(discord.Client):
         """
         Admin commands
         """
+
         if message.author.name == self.h_owner:
             if content == "!quit":
                 await self.close()
@@ -135,7 +172,7 @@ class DiscordClient(discord.Client):
 
         message = self.h_format_text("*%s* has joined the server" % username)
 
-        self.h_raw_send_to_irc(message)
+        self.h_send_notification('message', 'raw', message, username)
 
 
     async def on_member_remove(self, member):
@@ -155,7 +192,7 @@ class DiscordClient(discord.Client):
 
         message = self.h_format_text("*%s* has quit the server" % username)
 
-        self.h_raw_send_to_irc(message)
+        self.h_send_notification('message', 'raw', message, username)
 
     async def on_member_update(self, member_before, member_after):
         """
@@ -178,7 +215,7 @@ class DiscordClient(discord.Client):
         """
         if username_a != username_b:
             message = self.h_format_text("*%s* is now known as *%s*" % (username_b, username_a))
-            self.h_raw_send_to_irc(message)
+            self.h_send_notification('message', 'raw', message, username_b)
         username = username_b
 
         """
@@ -186,10 +223,10 @@ class DiscordClient(discord.Client):
         """
         if member_before.status == discord.Status.offline and member_after.status != discord.Status.offline:
             message = self.h_format_text("*%s* has joined" % (username,))
-            self.h_raw_send_to_irc(message)
+            self.h_send_notification('message', 'raw', message, None)
         if member_before.status != discord.Status.offline and member_after.status == discord.Status.offline:
             message = self.h_format_text("*%s* has quit" % (username,))
-            self.h_raw_send_to_irc(message)
+            self.h_send_notification('message', 'raw', message, None)
 
     def get_nick(self, member):
         if member.nick is not None:
@@ -230,21 +267,40 @@ class DiscordClient(discord.Client):
                 return ''.join(output)
         return nick[0] + "'" + nick[1:]
 
+
     def h_raw_send_to_irc(self, message):
         print("[Discord] %s" % message)
-        self.h_irc.h_send_message(message)
+        self.h_send_notification('message', 'raw', message, None)
 
     def h_send_to_irc(self, username, content):
-        message = self.h_output_msg.replace(":username:", self.de_hl_nick(username)).replace(":message:", content)
-
+        message = self.h_output_msg.replace(":username:", username).replace(":message:", content)
+        
         if content.startswith(self.h_cmd_prefix):
-            self.h_irc.h_send_message(self.h_output_cmd.replace(":username:", username))
-            self.h_irc.h_send_message(content)
+            self.h_send_notification('message', 'raw', self.h_output_cmd.replace(":username:", username))
+            self.h_send_notification('message', 'raw', content, username)
         else:
-            self.h_irc.h_send_message(message)
+            self.h_send_notification('message', None, message, username)
 
-    def h_send_message(self, message):
-        asyncio.run_coroutine_threadsafe(self.h_send_message_async(message), self.loop)
+    # notification system
+
+    def h_send_notification(self, n_type, subtype=None, content=None, username=None):
+        notif = notification(n_type, subtype, content, username)
+        self.h_irc.get_notification(notif)
+
+    def get_notification(self, notif):
+        self.callback[notif.n_type][notif.subtype](notif)
+
+
+    # discord sending
+
+    def h_send_message(self, notif):
+        asyncio.run_coroutine_threadsafe(self.h_send_message_async(notif.message), self.loop)
+
+    def h_send_raw_message(self, notif):
+        asyncio.run_coroutine_threadsafe(self.h_send_message_async(notif.message), self.loop)
+
+    def h_send_command(self, notif):
+        self.h_send_message(notif)
 
     async def h_send_message_async(self, message):
         await self.send_message(self.h_channel, message)
