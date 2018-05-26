@@ -26,7 +26,10 @@ class DiscordClient(discord.Client):
         self.users_bots   = {}
         self.callback     = {
         'notification'    : {
-            'nick_in_use' :self.unimplemented},
+            'nick_in_use' :self.unimplemented,
+            'bot_created' :self.on_bot_created,
+            'bot_ch_nick' :self.on_bot_change_nick,
+            'bot_killed'  :self.on_bot_killed},
         'message'         : {
             'default'     :self.h_send_message,
             'command'     :self.h_send_command,
@@ -39,6 +42,7 @@ class DiscordClient(discord.Client):
             'default'     :self.on_irc_part},
         'join'            : {
             'default'     :self.on_irc_join},
+
         }
 
         super().__init__()
@@ -46,6 +50,9 @@ class DiscordClient(discord.Client):
     def unimplemented(self, notif):
         print(notif)
         print('This feature is not yet implemented')
+
+    def on_irc_alreadyinuse(self, notif):
+        del(self.users_bots[notif.src_user])
 
     def on_irc_quit(self, notif):
         pass
@@ -58,6 +65,15 @@ class DiscordClient(discord.Client):
 
     def on_irc_join(self, notif):
         pass
+
+    def on_bot_created(self, notif):
+        self.users_bots[notif.src_user] = notif.message
+
+    def on_bot_change_nick(self, notif):
+        self.users_bots[notif.dst_user] = self.users_bots.pop(notif.src_user)
+
+    def on_bot_killed(self, notif):
+        del self.users_bots[notif.src_user]
 
     def set_irc(self, irc):
         self.h_irc = irc
@@ -151,8 +167,7 @@ class DiscordClient(discord.Client):
         Send to IRC
         """
         for c in content.split('\n'):
-            message = "<%s> : %s" % (username, c)
-            print("[Discord] %s" % message)
+            print("[Discord] <%s> %s" % (username, c))
             self.h_send_to_irc(username, self.h_format_text(c.strip()))
 
     async def on_member_join(self, member):
@@ -201,12 +216,6 @@ class DiscordClient(discord.Client):
         if member_before == self.user:
             return
 
-        """
-        Don't log if not set
-        """
-        if not self.h_log_events:
-            return
-
         username_b = self.get_nick(member_before)
         username_a = self.get_nick(member_after)
 
@@ -214,19 +223,33 @@ class DiscordClient(discord.Client):
         Nick change
         """
         if username_a != username_b:
-            message = self.h_format_text("*%s* is now known as *%s*" % (username_b, username_a))
-            self.h_send_notification('message', 'raw', message, username_b)
+            if not self.h_log_events:
+                message = self.h_format_text("*%s* is now known as *%s*" % (username_b, username_a))
+                self.h_send_notification('message', 'raw', message, username_b)
+            self.h_send_notification('user', 'change_nick', None, username_b, username_a)
+
+            
         username = username_b
 
         """
         Status change
         """
         if member_before.status == discord.Status.offline and member_after.status != discord.Status.offline:
-            message = self.h_format_text("*%s* has joined" % (username,))
-            self.h_send_notification('message', 'raw', message, None)
+            if not self.h_log_events:
+                message = self.h_format_text("*%s* has joined" % (username,))
+                self.h_send_notification('message', 'raw', message, None)
+
+            # spawn a new IRC user bot
+            self.h_send_notification('user', 'join', None, username)
+
+
         if member_before.status != discord.Status.offline and member_after.status == discord.Status.offline:
-            message = self.h_format_text("*%s* has quit" % (username,))
-            self.h_send_notification('message', 'raw', message, None)
+            if not self.h_log_events:
+                message = self.h_format_text("*%s* has quit" % (username,))
+                self.h_send_notification('message', 'raw', message, None)
+
+            # kill the IRC user bot
+            self.h_send_notification('user', 'quit', None, username)
 
     def get_nick(self, member):
         if member.nick is not None:
@@ -273,19 +296,25 @@ class DiscordClient(discord.Client):
         self.h_send_notification('message', 'raw', message, None)
 
     def h_send_to_irc(self, username, content):
-        message = self.h_output_msg.replace(":username:", username).replace(":message:", content)
+        if username not in self.users_bots.keys():
+            content = self.h_output_msg.replace(":username:", username).replace(":message:", content)
         
         if content.startswith(self.h_cmd_prefix):
             self.h_send_notification('message', 'raw', self.h_output_cmd.replace(":username:", username))
             self.h_send_notification('message', 'raw', content, username)
         else:
-            self.h_send_notification('message', None, message, username)
+            self.h_send_notification('message', None, content, username)
 
     # notification system
 
-    def h_send_notification(self, n_type, subtype=None, content=None, username=None):
-        notif = Notification(n_type, subtype, content, username)
-        self.h_irc.get_notification(notif)
+    def h_send_notification(self, n_type, subtype=None, content=None, username=None, dst_username=None):
+        notif = Notification(n_type, subtype, content, username, dst_username)
+
+        # if there is a user bot, we send the message to him, otherwise to the master bot
+        connector = self.h_irc
+        if username in self.users_bots.keys():
+            connector = self.users_bots[username]
+        connector.get_notification(notif)
 
     def get_notification(self, notif):
         self.callback[notif.n_type][notif.subtype](notif)
@@ -294,7 +323,10 @@ class DiscordClient(discord.Client):
     # discord sending
 
     def h_send_message(self, notif):
-        asyncio.run_coroutine_threadsafe(self.h_send_message_async(notif.message), self.loop)
+        user = '' if notif.src_user is None else '<'+notif.src_user+'> '
+        if notif.src_user == self.user or notif.src_user in self.users_bots.keys():
+            return
+        asyncio.run_coroutine_threadsafe(self.h_send_message_async(user+notif.message), self.loop)
 
     def h_send_raw_message(self, notif):
         asyncio.run_coroutine_threadsafe(self.h_send_message_async(notif.message), self.loop)

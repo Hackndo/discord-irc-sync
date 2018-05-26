@@ -11,23 +11,24 @@ class Notification(object):
         self.n_type        = None
         self.subtype       = None
         self.allowed_types = {
-            'notification' : ['nick_in_use'],
+            'notification' : ['nick_in_use', 'bot_created', 'bot_killed', 'bot_ch_nick'],
             'message'      : ['raw'],
             'query'        : [],
             'quit'         : [],
             'part'         : [],
             'join'         : [],
             'kick'         : [],
+            'user'         : ['join', 'quit', 'change_nick']
             }
 
         if n_type not in self.allowed_types.keys():
             print('the notification "'+n_type+'" is not yet implemented.')
-            return 1
+            return
         else:
             if subtype is not None:
                 if subtype not in self. allowed_types[n_type]:
                     print('the subtype "'+subtype+'" is not yet implemented.')
-                    return 2
+                    return
             else:
                 subtype = 'default'
 
