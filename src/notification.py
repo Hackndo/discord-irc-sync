@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-class notification(object):
+class Notification(object):
     """docstring for Notification"""
     def __init__(self, n_type, subtype=None, message=None, user=None, dest_user=None):
         self.allowed_types = ['notification', 'message', 'raw_message', 'quit', 'join']
@@ -22,11 +22,12 @@ class notification(object):
 
         if n_type not in self.allowed_types.keys():
             print('the notification "'+n_type+'" is not yet implemented.')
-            return              
+            return 1
         else:
             if subtype is not None:
                 if subtype not in self. allowed_types[n_type]:
                     print('the subtype "'+subtype+'" is not yet implemented.')
+                    return 2
             else:
                 subtype = 'default'
 

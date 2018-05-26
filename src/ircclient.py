@@ -5,7 +5,7 @@ import irc.bot
 import threading
 import time
 import ssl
-from .notification import notification
+from .notification import Notification
 
 from .formatting import I2DFormatter
 
@@ -162,7 +162,7 @@ class IRCClient(irc.bot.SingleServerIRCBot):
     # notification system
 
     def h_send_notification(self, n_type, subtype=None, content=None, username=None):
-        notif = notification(n_type, subtype, content, username)
+        notif = Notification(n_type, subtype, content, username)
         self.h_discord.get_notification(notif)
 
     def get_notification(self, notif):

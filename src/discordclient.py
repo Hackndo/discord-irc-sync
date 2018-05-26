@@ -7,7 +7,7 @@ import re
 from . import utils
 import random
 from .ircclient import IRCClient
-from .notification import notification
+from .notification import Notification
 from .formatting import D2IFormatter
 
 class DiscordClient(discord.Client):
@@ -284,7 +284,7 @@ class DiscordClient(discord.Client):
     # notification system
 
     def h_send_notification(self, n_type, subtype=None, content=None, username=None):
-        notif = notification(n_type, subtype, content, username)
+        notif = Notification(n_type, subtype, content, username)
         self.h_irc.get_notification(notif)
 
     def get_notification(self, notif):
