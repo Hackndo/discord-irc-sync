@@ -82,7 +82,7 @@ class DiscordClient(discord.Client):
         print("[Discord] Logged in as:")
         print("[Discord] " + self.user.name)
 
-        if len(self.servers) == 0:
+        if len(self.guilds) == 0:
             print("[Discord] Bot is not yet in any server.")
             await self.close()
             return
@@ -91,18 +91,18 @@ class DiscordClient(discord.Client):
             print("[Discord] You have not configured a server to use in settings.json")
             print("[Discord] Please put one of the server IDs listed below in settings.json")
             
-            for server in self.servers:
+            for server in self.guilds:
                 print("[Discord] %s: %s" % (server.name, server.id))
             
             await self.close()
             return
         
-        findServer = [x for x in self.servers if x.id == self.h_server_id]
+        findServer = [x for x in self.guilds if x.id == self.h_server_id]
         if not len(findServer):
             print("[Discord] No server could be found with the specified id: " + self.h_server_id)
             print("[Discord] Available servers:")
             
-            for server in self.servers:
+            for server in self.guilds:
                 print("[Discord] %s: %s" % (server.name, server.id))
                 
             await self.close()
@@ -121,7 +121,7 @@ class DiscordClient(discord.Client):
             await self.close()
             return
         
-        find_channel = [x for x in server.channels if x.id == self.h_channel_id and x.type == discord.ChannelType.text]
+        find_channel = [x for x in server.text_channels if x.id == self.h_channel_id]
         if not len(find_channel):
             print("[Discord] No channel could be found with the specified id: " + self.h_server_id)
             print("[Discord] Note that you can only use text channels.")
@@ -335,7 +335,7 @@ class DiscordClient(discord.Client):
         self.h_send_message(notif)
 
     async def h_send_message_async(self, message):
-        await self.send_message(self.h_channel, message)
+        await self.h_channel.send(message)
 
     def h_format_text(self, message):
         return self.h_formatter.format(message)
