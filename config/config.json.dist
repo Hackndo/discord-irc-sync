@@ -12,8 +12,8 @@
         "log_events": true
     },
     "discord": {
-        "server": "<server id>",
-        "channel": "<channel id>",
+        "server": <server id>,
+        "channel": <channel id>,
         "token": "<bot token>",
         "owner": "username",
         "cmd_prefix": "!",
