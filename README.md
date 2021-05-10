@@ -59,8 +59,8 @@ Configuration file looks like this
         "log_events": true                          // Send part/join/kick/quit to discord
     },
     "discord": {
-        "server": "<server id>",                    // Discord Server ID
-        "channel": "<channel id>",                  // Discord Channel ID
+        "server": <server id>,                      // Discord Server ID
+        "channel": <channel id>,                    // Discord Channel ID
         "token": "<bot token>",                     // Discord Bot Token
         "owner": "username",                        // Discord Bot Owner username (admin commands)
         "cmd_prefix": "!",                          // Channel commands prefix (if any)
