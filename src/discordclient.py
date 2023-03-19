@@ -163,6 +163,10 @@ class DiscordClient(discord.Client):
                 await self.close()
                 return
 
+        try:
+            content = message.reference.resolved.author.display_name + ": " + content
+        except AttributeError:
+            pass  # Either the message as no reference, or it lacks its original message.
         """
         Send to IRC
         """
