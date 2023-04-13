@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 
-import json
-import src.utils
 import sys
 
-from src.ircclient import IRCClient
-from src.discordclient import DiscordClient
 from src import utils
-
+from src.discordclient import DiscordClient
+from src.ircclient import IRCClient
 
 config_file = sys.argv[1] if len(sys.argv) == 2 else None
 settings = utils.read_config(config_file)
