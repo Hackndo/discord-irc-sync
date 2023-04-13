@@ -46,6 +46,7 @@ class DiscordClient(discord.Client):
         intents = discord.Intents.default()
         intents.typing = False
         intents.presences = False
+        intents.message_content = True
         super().__init__(intents=intents)
 
     def unimplemented(self, notif):
@@ -163,11 +164,12 @@ class DiscordClient(discord.Client):
             if content == "!quit":
                 await self.close()
                 return
-
+        """
         try:
             content = message.reference.resolved.author.display_name + ": " + content
         except AttributeError:
             pass  # Either the message as no reference, or it lacks its original message.
+        """
         """
         Send to IRC
         """

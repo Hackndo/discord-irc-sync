@@ -17,11 +17,13 @@ Requirements
 Discord Bot
 -----------
 
-1. Go to [Discord developer application](https://discordapp.com/developers/applications/me)
+1. Go to [Discord developer application](https://discord.com/developers/applications)
 2. Add a new application
 3. Create a Bot User
 4. Follow https://discordapp.com/oauth2/authorize?&client_id=CLIENT_ID&scope=bot&permissions=0 with your application **Client ID**
 5. Choose your server
+
+Then, enable `Message Content Intent` by navigating to your bot page (https://discord.com/developers/applications then choose your bot), under the bot menu, enable the `Message Content Intent` parameter so the bot can read messages and transfer them to IRC.
 
 Initialization
 --------------
