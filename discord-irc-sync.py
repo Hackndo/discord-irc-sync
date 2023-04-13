@@ -9,7 +9,7 @@ from src.ircclient import IRCClient
 config_file = sys.argv[1] if len(sys.argv) == 2 else None
 settings = utils.read_config(config_file)
 
-settings['irc']['master_bot'] = True
+settings["irc"]["master_bot"] = True
 discord_client = DiscordClient(settings)
 irc_client = IRCClient(settings)
 
