@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 
-import discord
 import asyncio
-import threading
 import re
-from . import utils
-import random
-from .ircclient import IRCClient
-from .notification import Notification
+
+import discord
+
 from .formatting import D2IFormatter
+from .notification import Notification
+
 
 class DiscordClient(discord.Client):
     def __init__(self, configuration):
@@ -44,8 +43,10 @@ class DiscordClient(discord.Client):
             'default'     :self.on_irc_join},
 
         }
-
-        super().__init__()
+        intents = discord.Intents.default()
+        intents.typing = False
+        intents.presences = False
+        super().__init__(intents=intents)
 
     def unimplemented(self, notif):
         print(notif)
